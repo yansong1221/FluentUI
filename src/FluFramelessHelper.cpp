@@ -34,6 +34,7 @@ static inline bool isCompositionEnabled(){
     }
     return false;
 }
+
 #endif
 
 FramelessEventFilter::FramelessEventFilter(FluFramelessHelper* helper){
@@ -194,6 +195,16 @@ bool FramelessEventFilter::nativeEventFilter(const QByteArray &eventType, void *
             auto pos = _helper->window->position();
             _helper->showSystemMenu(QPoint(pos.x(),pos.y()+_helper->getAppBarHeight()));
         }
+    }else if(uMsg == WM_SYSCOMMAND){
+        if(wParam == SC_MINIMIZE){
+            if(_helper->window->transientParent()){
+                _helper->window->transientParent()->showMinimized();
+            }else{
+                _helper->window->showMinimized();
+            }
+            return true;
+        }
+        return false;
     }
     return false;
 #endif
@@ -203,7 +214,6 @@ bool FramelessEventFilter::nativeEventFilter(const QByteArray &eventType, void *
 FluFramelessHelper::FluFramelessHelper(QObject *parent)
     : QObject{parent}
 {
-
 }
 
 void FluFramelessHelper::classBegin(){
@@ -314,6 +324,11 @@ void FluFramelessHelper::componentComplete(){
             _appBar.value<QObject*>()->setProperty("systemMoveEnable",false);
         }
         window->setFlags((window->flags()) | Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::FramelessWindowHint);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        if(FluTools::getInstance()->isSoftware()){
+            window->setFlag(Qt::FramelessWindowHint,false);
+        }
+#endif
         if(resizeable()){
             window->setFlag(Qt::WindowMaximizeButtonHint);
         }
@@ -325,7 +340,13 @@ void FluFramelessHelper::componentComplete(){
             ::SetWindowLongPtr(hwnd, GWL_STYLE, style | WS_MAXIMIZEBOX | WS_THICKFRAME);
         }else{
             ::SetWindowLongPtr(hwnd, GWL_STYLE, style | WS_THICKFRAME);
+            for (int i = 0; i < qApp->screens().count(); ++i) {
+                connect( qApp->screens().at(i),&QScreen::logicalDotsPerInchChanged,this,[=]{
+                    SetWindowPos(hwnd,nullptr,0,0,0,0,SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_FRAMECHANGED);
+                });
+            }
         }
+        SetWindowPos(hwnd,nullptr,0,0,0,0,SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 #else
         window->setFlags((window->flags() & (~Qt::WindowMinMaxButtonsHint) & (~Qt::Dialog)) | Qt::FramelessWindowHint | Qt::Window);
         window->installEventFilter(this);
@@ -336,8 +357,7 @@ void FluFramelessHelper::componentComplete(){
             window->setMaximumSize(QSize(w,h));
             window->setMinimumSize(QSize(w,h));
         }
-        window->setWidth(w);
-        window->setHeight(h);
+        window->resize(QSize(w,h));
         _onStayTopChange();
         _stayTop.connectNotifySignal(this,SLOT(_onStayTopChange()));
         _screen.connectNotifySignal(this,SLOT(_onScreenChanged()));

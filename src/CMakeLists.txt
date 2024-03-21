@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #设置版本号
-add_definitions(-DFLUENTUI_VERSION=1,7,1,0)
+add_definitions(-DFLUENTUI_VERSION=1,7,3,0)
 
 if (FLUENTUI_BUILD_STATIC_LIB)
     add_definitions(-DFLUENTUI_BUILD_STATIC_LIB)
@@ -40,7 +40,7 @@ if(QT_VERSION VERSION_GREATER_EQUAL "6.3")
 else()
     set(CMAKE_AUTOMOC ON)
     set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
 #国际化
@@ -139,12 +139,17 @@ if(QT_VERSION VERSION_GREATER_EQUAL "6.2")
         RESOURCE_PREFIX "/qt/qml"
     )
 else()
+    #加快qrc编译
+    set(QRC_FILE Qt5/imports/fluentui.qrc)
+    qt_add_big_resources(QRC_RESOURCES ${QRC_FILE})
+    list(APPEND QRC_RESOURCES ${QRC_FILE})
+    set_property(SOURCE ${QRC_FILE} PROPERTY SKIP_AUTORCC ON)
     #如果是Qt6.2版本以下，则使用add_qmlplugin函数添加资源文件，这是个自定义的函数，详情见.cmake/QmlPlugin.cmake
     include(QmlPlugin)
     add_qmlplugin(${PROJECT_NAME}
         URI "FluentUI"
         VERSION 1.0
-        SOURCES ${sources_files} ${FLUENTUI_VERSION_RC_PATH} Qt5/imports/fluentui.qrc
+        SOURCES ${sources_files} ${FLUENTUI_VERSION_RC_PATH} ${QRC_RESOURCES}
         QMLFILES ${qml_files}
         QMLDIR imports/FluentUI
         BINARY_DIR ${FLUENTUI_QML_PLUGIN_DIRECTORY}
@@ -170,9 +175,9 @@ endif()
 
 #链接库
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    Qt${QT_VERSION_MAJOR}::CorePrivate
-    Qt${QT_VERSION_MAJOR}::QuickPrivate
-    Qt${QT_VERSION_MAJOR}::QmlPrivate
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Quick
+    Qt${QT_VERSION_MAJOR}::Qml
 )
 
 #安装
