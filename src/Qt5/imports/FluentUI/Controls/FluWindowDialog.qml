@@ -9,19 +9,19 @@ FluWindow {
     property Component contentDelegate
     autoVisible: false
     autoCenter: false
-    autoDestory: true
+    autoDestroy: true
     fixSize: true
     Loader{
         anchors.fill: parent
         sourceComponent: {
-            if(control.autoDestory){
+            if(control.autoDestroy){
                 return control.visible ? control.contentDelegate : undefined
             }
             return control.contentDelegate
         }
     }
     closeListener: function(event){
-        visible = false
+        control.visibility = Window.Hidden
         event.accepted = false
     }
     Connections{
@@ -37,6 +37,6 @@ FluWindow {
         var y = transientParent.y + (transientParent.height - height)/2
         control.stayTop = Qt.binding(function(){return transientParent.stayTop})
         control.setGeometry(x,y,width,height)
-        control.visible = true
+        control.visibility = Window.Windowed
     }
 }

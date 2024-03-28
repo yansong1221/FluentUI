@@ -10,6 +10,20 @@
 #include <QClipboard>
 #include <QTranslator>
 
+FluWindowRegister::FluWindowRegister(QObject *parent):QObject{parent}{
+    from(nullptr);
+    to(nullptr);
+    path("");
+}
+
+void FluWindowRegister::launch(const QJsonObject& argument){
+    FluApp::getInstance()->navigate(path(),argument,this);
+}
+
+void FluWindowRegister::onResult(const QJsonObject& data){
+    Q_EMIT result(data);
+}
+
 FluApp::FluApp(QObject *parent):QObject{parent}{
     useSystemAppBar(false);
 }
@@ -24,7 +38,7 @@ void FluApp::init(QObject *target,QLocale locale){
     qApp->installTranslator(_translator);
     const QStringList uiLanguages = _locale.uiLanguages();
     for (const QString &name : uiLanguages) {
-        const QString baseName = "fluentuiplugin_" + QLocale(name).name();
+        const QString baseName = "fluentui_" + QLocale(name).name();
         if (_translator->load(":/qt/qml/FluentUI/i18n/"+ baseName)) {
             _engine->retranslate();
             break;
@@ -63,7 +77,7 @@ void FluApp::navigate(const QString& route,const QJsonObject& argument,FluWindow
     if(win){
         int launchMode = win->property("launchMode").toInt();
         if(launchMode == 1){
-            win->setProperty("argument",argument);
+            win->setProperty("",argument);
             win->show();
             win->raise();
             win->requestActivate();
