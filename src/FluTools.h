@@ -34,12 +34,12 @@ public:
     Q_INVOKABLE void restoreOverrideCursor();
     Q_INVOKABLE QString html2PlantText(const QString& html);
     Q_INVOKABLE QString toLocalPath(const QUrl& url);
-    Q_INVOKABLE void deleteItem(QObject *p);
+    Q_INVOKABLE void deleteLater(QObject *p);
     Q_INVOKABLE QString getFileNameByUrl(const QUrl& url);
     Q_INVOKABLE QRect getVirtualGeometry();
     Q_INVOKABLE QString getApplicationDirPath();
     Q_INVOKABLE QUrl getUrlByFilePath(const QString& path);
-    Q_INVOKABLE QColor colorAlpha(const QColor&,qreal alpha);
+    Q_INVOKABLE QColor withOpacity(const QColor&,qreal alpha);
     Q_INVOKABLE QString md5(QString text);
     Q_INVOKABLE QString sha256(QString text);
     Q_INVOKABLE QString toBase64(QString text);

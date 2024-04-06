@@ -4,26 +4,16 @@
 #include <QObject>
 #include <QtQml/qqml.h>
 
-namespace FluViewModelType {
+namespace FluSheetType {
 Q_NAMESPACE
-enum Scope {
-    Window = 0x0000,
-    Application = 0x0001
+enum Position {
+    Left = 0x0000,
+    Top = 0x0001,
+    Right = 0x0002,
+    Bottom = 0x0004,
 };
-Q_ENUM_NS(Scope)
-QML_NAMED_ELEMENT(FluViewModelType)
-}
-
-namespace FluNetworkType {
-Q_NAMESPACE
-enum CacheMode {
-    NoCache = 0x0000,
-    RequestFailedReadCache = 0x0001,
-    IfNoneCacheRequest = 0x0002,
-    FirstCacheThenRequest = 0x0004,
-};
-Q_ENUM_NS(CacheMode)
-QML_NAMED_ELEMENT(FluNetworkType)
+Q_ENUM_NS(Position)
+QML_NAMED_ELEMENT(FluSheetType)
 }
 
 namespace FluThemeType {

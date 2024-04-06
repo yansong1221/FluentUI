@@ -2,7 +2,7 @@
 
 #include <QMetaEnum>
 
-FluNode::FluNode(QObject *parent): QObject{parent}{
+FluTreeNode::FluTreeNode(QObject *parent): QObject{parent}{
 }
 
 FluTreeModel::FluTreeModel(QObject *parent): QAbstractItemModel{parent}{
@@ -41,7 +41,7 @@ QHash<int, QByteArray> FluTreeModel::roleNames() const {
     return { {Qt::DisplayRole, "dataModel"} };
 };
 
-void FluTreeModel::setData(QList<FluNode*> data){
+void FluTreeModel::setData(QList<FluTreeNode*> data){
     beginResetModel();
     _rows = data;
     endResetModel();
@@ -51,20 +51,20 @@ void FluTreeModel::removeRows(int row,int count){
     if (row < 0 || row + count > _rows.size() || count==0)
         return;
     beginRemoveRows(QModelIndex(),row, row + count - 1);
-    QList<FluNode*> firstPart = _rows.mid(0,row);
-    QList<FluNode*> secondPart = _rows.mid(row + count);
+    QList<FluTreeNode*> firstPart = _rows.mid(0,row);
+    QList<FluTreeNode*> secondPart = _rows.mid(row + count);
     _rows.clear();
     _rows.append(firstPart);
     _rows.append(secondPart);
     endRemoveRows();
 }
 
-void FluTreeModel::insertRows(int row,QList<FluNode*> data){
+void FluTreeModel::insertRows(int row,QList<FluTreeNode*> data){
     if (row < 0 || row > _rows.size() || data.size() == 0)
         return;;
     beginInsertRows(QModelIndex(), row, row + data.size() - 1);
-    QList<FluNode*> firstPart = _rows.mid(0, row);
-    QList<FluNode*> secondPart = _rows.mid(row);
+    QList<FluTreeNode*> firstPart = _rows.mid(0, row);
+    QList<FluTreeNode*> secondPart = _rows.mid(row);
     _rows.clear();
     _rows.append(firstPart);
     _rows.append(data);
@@ -76,18 +76,18 @@ QObject* FluTreeModel::getRow(int row){
     return _rows.at(row);
 }
 
-void FluTreeModel::checkRow(int row,bool chekced){
+void FluTreeModel::checkRow(int row,bool checked){
     auto itemData = _rows.at(row);
     if(itemData->hasChildren()){
-        QList<FluNode*> stack = itemData->_children;
+        QList<FluTreeNode*> stack = itemData->_children;
         std::reverse(stack.begin(), stack.end());
         while (stack.count() > 0) {
             auto item = stack.at(stack.count()-1);
             stack.pop_back();
             if(!item->hasChildren()){
-                item->_checked = chekced;
+                item->_checked = checked;
             }
-            QList<FluNode*> children = item->_children;
+            QList<FluTreeNode*> children = item->_children;
             if(!children.isEmpty()){
                 std::reverse(children.begin(), children.end());
                 foreach (auto c, children) {
@@ -96,13 +96,13 @@ void FluTreeModel::checkRow(int row,bool chekced){
             }
         }
     }else{
-        if(itemData->_checked == chekced){
+        if(itemData->_checked == checked){
             return;
         }
-        itemData->_checked = chekced;
+        itemData->_checked = checked;
     }
-    Q_EMIT layoutChanged(QList<QPersistentModelIndex>(),QAbstractItemModel::VerticalSortHint);
-    QList<FluNode*> data;
+    Q_EMIT dataChanged(index(0,0),index(rowCount()-1,0));
+    QList<FluTreeNode*> data;
     foreach (auto item, _dataSource) {
         if(!item->hasChildren()){
             if(item->_checked){
@@ -119,16 +119,16 @@ void FluTreeModel::setDataSource(QList<QMap<QString,QVariant>> data){
         delete _root;
         _root = nullptr;
     }
-    _root = new FluNode(this);
+    _root = new FluTreeNode(this);
     std::reverse(data.begin(), data.end());
     while (data.count() > 0) {
         auto item = data.at(data.count()-1);
         data.pop_back();
-        FluNode* node = new FluNode(this);
+        FluTreeNode* node = new FluTreeNode(this);
         node->_title = item.value("title").toString();
         node->_key = item.value("key").toString();
         node->_depth = item.value("__depth").toInt();
-        node->_parent = item.value("__parent").value<FluNode*>();
+        node->_parent = item.value("__parent").value<FluTreeNode*>();
         node->_isExpanded = true;
         if(node->_parent){
             node->_parent->_children.append(node);
@@ -181,8 +181,8 @@ void FluTreeModel::expand(int row){
     _rows.at(row)->_isExpanded = true;
     Q_EMIT dataChanged(index(row,0),index(row,0));
     auto modelData = _rows.at(row);
-    QList<FluNode*> insertData;
-    QList<FluNode*> stack = modelData->_children;
+    QList<FluTreeNode*> insertData;
+    QList<FluTreeNode*> stack = modelData->_children;
     std::reverse(stack.begin(), stack.end());
     while (stack.count() > 0) {
         auto item = stack.at(stack.count()-1);
@@ -190,7 +190,7 @@ void FluTreeModel::expand(int row){
         if(item->isShown()){
             insertData.append(item);
         }
-        QList<FluNode*> children = item->_children;
+        QList<FluTreeNode*> children = item->_children;
         if(!children.isEmpty()){
             std::reverse(children.begin(), children.end());
             foreach (auto c, children) {
@@ -201,7 +201,7 @@ void FluTreeModel::expand(int row){
     insertRows(row+1,insertData);
 }
 
-void FluTreeModel::dragAnddrop(int dragIndex,int dropIndex,bool isDropTopArea){
+void FluTreeModel::dragAndDrop(int dragIndex,int dropIndex,bool isDropTopArea){
     if(dropIndex>_rows.count() || dropIndex<0){
         return;
     }
@@ -242,7 +242,7 @@ void FluTreeModel::dragAnddrop(int dragIndex,int dropIndex,bool isDropTopArea){
 
     Q_EMIT layoutAboutToBeChanged();
     if(dragItem->_parent == dropItem->_parent){
-        QList<FluNode*>* children = &(dragItem->_parent->_children);
+        QList<FluTreeNode*>* children = &(dragItem->_parent->_children);
         int srcIndex = children->indexOf(dragItem);
         int destIndex = children->indexOf(dropItem);
         if(dropIndex > dragIndex){
@@ -260,14 +260,14 @@ void FluTreeModel::dragAnddrop(int dragIndex,int dropIndex,bool isDropTopArea){
         }
         children->move(srcIndex,targetIndex);
     }else{
-        QList<FluNode*>* srcChildren = &(dragItem->_parent->_children);
-        QList<FluNode*>* destChildren = &(dropItem->_parent->_children);
+        QList<FluTreeNode*>* srcChildren = &(dragItem->_parent->_children);
+        QList<FluTreeNode*>* destChildren = &(dropItem->_parent->_children);
         int srcIndex = srcChildren->indexOf(dragItem);
         int destIndex = destChildren->indexOf(dropItem);
         dragItem->_depth = dropItem->_depth;
         dragItem->_parent = dropItem->_parent;
         if(dragItem->hasChildren()){
-            QList<FluNode*> stack = dragItem->_children;
+            QList<FluTreeNode*> stack = dragItem->_children;
             foreach (auto node, stack) {
                 node->_depth = dragItem->_depth+1;
             }
@@ -275,7 +275,7 @@ void FluTreeModel::dragAnddrop(int dragIndex,int dropIndex,bool isDropTopArea){
             while (stack.count() > 0) {
                 auto item = stack.at(stack.count()-1);
                 stack.pop_back();
-                QList<FluNode*> children = item->_children;
+                QList<FluTreeNode*> children = item->_children;
                 if(!children.isEmpty()){
                     std::reverse(children.begin(), children.end());
                     foreach (auto c, children) {
@@ -302,8 +302,7 @@ void FluTreeModel::dragAnddrop(int dragIndex,int dropIndex,bool isDropTopArea){
         destChildren->insert(targetIndex,dragItem);
     }
     changePersistentIndex(index(qMin(dragIndex,dropIndex),0),index(qMax(dragIndex,dropIndex),0));
-    Q_EMIT layoutChanged(QList<QPersistentModelIndex>(),QAbstractItemModel::VerticalSortHint);
-
+    Q_EMIT dataChanged(index(0,0),index(rowCount()-1,0));
 }
 
 bool FluTreeModel::hitHasChildrenExpanded(int row){
@@ -318,14 +317,14 @@ void FluTreeModel::refreshNode(int row){
     Q_EMIT dataChanged(index(row,0),index(row,0));
 };
 
-FluNode* FluTreeModel::getNode(int row){
+FluTreeNode* FluTreeModel::getNode(int row){
     return _rows.at(row);
 }
 
 void FluTreeModel::allExpand(){
     beginResetModel();
-    QList<FluNode*> data;
-    QList<FluNode*> stack = _root->_children;
+    QList<FluTreeNode*> data;
+    QList<FluTreeNode*> stack = _root->_children;
     std::reverse(stack.begin(), stack.end());
     while (stack.count() > 0) {
         auto item = stack.at(stack.count()-1);
@@ -334,7 +333,7 @@ void FluTreeModel::allExpand(){
             item->_isExpanded = true;
         }
         data.append(item);
-        QList<FluNode*> children = item->_children;
+        QList<FluTreeNode*> children = item->_children;
         if(!children.isEmpty()){
             std::reverse(children.begin(), children.end());
             foreach (auto c, children) {
@@ -347,7 +346,7 @@ void FluTreeModel::allExpand(){
 }
 void FluTreeModel::allCollapse(){
     beginResetModel();
-    QList<FluNode*> stack = _root->_children;
+    QList<FluTreeNode*> stack = _root->_children;
     std::reverse(stack.begin(), stack.end());
     while (stack.count() > 0) {
         auto item = stack.at(stack.count()-1);
@@ -355,7 +354,7 @@ void FluTreeModel::allCollapse(){
         if(item->hasChildren()){
             item->_isExpanded = false;
         }
-        QList<FluNode*> children = item->_children;
+        QList<FluTreeNode*> children = item->_children;
         if(!children.isEmpty()){
             std::reverse(children.begin(), children.end());
             foreach (auto c, children) {

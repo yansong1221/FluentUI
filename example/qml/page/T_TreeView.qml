@@ -33,7 +33,6 @@ FluContentPage {
         spacing: 12
         width: 300
         anchors{
-            topMargin: 20
             top:parent.top
             left: parent.left
             leftMargin: 10
@@ -103,7 +102,7 @@ FluContentPage {
             }
         }
     }
-    FluArea{
+    FluFrame{
         anchors{
             left: layout_column.right
             top: parent.top

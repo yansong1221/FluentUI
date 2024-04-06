@@ -5,7 +5,6 @@
         <file>FluentUI/Font/Segoe_Fluent_Icons.ttf</file>
         <file>FluentUI/Controls/FluAcrylic.qml</file>
         <file>FluentUI/Controls/FluAppBar.qml</file>
-        <file>FluentUI/Controls/FluArea.qml</file>
         <file>FluentUI/Controls/FluAutoSuggestBox.qml</file>
         <file>FluentUI/Controls/FluBadge.qml</file>
         <file>FluentUI/Controls/FluBreadcrumbBar.qml</file>
@@ -101,5 +100,15 @@
         <file>FluentUI/Controls/FluWindowDialog.qml</file>
         <file>FluentUI/i18n/fluentui_en_US.qm</file>
         <file>FluentUI/i18n/fluentui_zh_CN.qm</file>
+        <file>FluentUI/Controls/FluLauncher.qml</file>
+        <file>FluentUI/Controls/FluRouter.qml</file>
+        <file>FluentUI/Controls/FluWindowResultLauncher.qml</file>
+        <file>FluentUI/Controls/qmldir</file>
+        <file>FluentUI/Controls/FluEvent.qml</file>
+        <file>FluentUI/Controls/FluEventBus.qml</file>
+        <file>FluentUI/Controls/FluFrame.qml</file>
+        <file>FluentUI/Controls/FluSheet.qml</file>
+        <file>FluentUI/Controls/FluGroupBox.qml</file>
+        <file>FluentUI/Controls/FluControlBackground.qml</file>
     </qresource>
 </RCC>

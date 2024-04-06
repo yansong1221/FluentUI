@@ -26,8 +26,8 @@ Item {
         width: parent.width
         height: 45
         radius: 4
-        color: FluTheme.dark ? Window.active ? Qt.rgba(38/255,44/255,54/255,1) : Qt.rgba(39/255,39/255,39/255,1) : Qt.rgba(251/255,251/255,253/255,1)
-        border.color: FluTheme.dark ?  Window.active ? Qt.rgba(55/255,55/255,55/255,1) : Qt.rgba(45/255,45/255,45/255,1) : Qt.rgba(226/255,229/255,234/255,1)
+        border.color: FluTheme.dividerColor
+        color: FluTheme.dark ? Window.active ?  Qt.rgba(39/255,39/255,39/255,1) : Qt.rgba(39/255,39/255,39/255,1) : Qt.rgba(251/255,251/255,253/255,1)
         MouseArea{
             id:control_mouse
             anchors.fill: parent
@@ -64,7 +64,7 @@ Item {
                 iconSource:FluentIcons.ChevronUp
                 iconSize: 15
                 Behavior on rotation {
-                    enabled: FluTheme.enableAnimation
+                    enabled: FluTheme.animationEnabled
                     NumberAnimation{
                         duration: 167
                         easing.type: Easing.OutCubic
@@ -90,7 +90,7 @@ Item {
             radius: 4
             clip: true
             color: FluTheme.dark ? Qt.rgba(39/255,39/255,39/255,1) : Qt.rgba(251/255,251/255,253/255,1)
-            border.color: FluTheme.dark ? Qt.rgba(45/255,45/255,45/255,1) : Qt.rgba(226/255,229/255,234/255,1)
+            border.color: FluTheme.dividerColor
             anchors.topMargin: -contentHeight
             states: [
                 State{
@@ -115,7 +115,7 @@ Item {
                     to:"expand"
                     NumberAnimation {
                         properties: "anchors.topMargin"
-                        duration: FluTheme.enableAnimation && d.flag ? 167 : 0
+                        duration: FluTheme.animationEnabled && d.flag ? 167 : 0
                         easing.type: Easing.OutCubic
                     }
                 },
@@ -123,7 +123,7 @@ Item {
                     to:"collapsed"
                     NumberAnimation {
                         properties: "anchors.topMargin"
-                        duration: FluTheme.enableAnimation && d.flag ? 167 : 0
+                        duration: FluTheme.animationEnabled && d.flag ? 167 : 0
                         easing.type: Easing.OutCubic
                     }
                 }

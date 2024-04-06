@@ -15,8 +15,9 @@
 #include "src/component/FileWatcher.h"
 #include "src/component/FpsItem.h"
 #include "src/helper/SettingsHelper.h"
-#include "src/helper/InitalizrHelper.h"
+#include "src/helper/InitializrHelper.h"
 #include "src/helper/TranslateHelper.h"
+#include "src/helper/Network.h"
 
 #ifdef FLUENTUI_BUILD_STATIC_LIB
 #if (QT_VERSION > QT_VERSION_CHECK(6, 2, 0))
@@ -31,6 +32,9 @@ Q_IMPORT_QML_PLUGIN(FluentUIPlugin)
 
 int main(int argc, char *argv[])
 {
+    const char *uri = "example";
+    int major = 1;
+    int minor = 0;
 #ifdef WIN32
     ::SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
     qputenv("QT_QPA_PLATFORM","windows:darkmode=2");
@@ -53,8 +57,8 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationVersion(APPLICATION_VERSION);
     QGuiApplication::setQuitOnLastWindowClosed(false);
     SettingsHelper::getInstance()->init(argv);
-    Log::setup(argv,"example");
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+    Log::setup(argv,uri);
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 #endif
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -65,18 +69,22 @@ int main(int argc, char *argv[])
 #endif
 #endif
     QGuiApplication app(argc, argv);
+    //@uri example
+    qmlRegisterType<CircularReveal>(uri, major, minor, "CircularReveal");
+    qmlRegisterType<FileWatcher>(uri, major, minor, "FileWatcher");
+    qmlRegisterType<FpsItem>(uri, major, minor, "FpsItem");
+    qmlRegisterType<NetworkCallable>(uri,major,minor,"NetworkCallable");
+    qmlRegisterType<NetworkParams>(uri,major,minor,"NetworkParams");
     QQmlApplicationEngine engine;
     TranslateHelper::getInstance()->init(&engine);
     engine.rootContext()->setContextProperty("AppInfo",AppInfo::getInstance());
     engine.rootContext()->setContextProperty("SettingsHelper",SettingsHelper::getInstance());
-    engine.rootContext()->setContextProperty("InitalizrHelper",InitalizrHelper::getInstance());
+    engine.rootContext()->setContextProperty("InitializrHelper",InitializrHelper::getInstance());
     engine.rootContext()->setContextProperty("TranslateHelper",TranslateHelper::getInstance());
+    engine.rootContext()->setContextProperty("Network",Network::getInstance());
 #ifdef FLUENTUI_BUILD_STATIC_LIB
     FluentUI::getInstance()->registerTypes(&engine);
 #endif
-    qmlRegisterType<CircularReveal>("example", 1, 0, "CircularReveal");
-    qmlRegisterType<FileWatcher>("example", 1, 0, "FileWatcher");
-    qmlRegisterType<FpsItem>("example", 1, 0, "FpsItem");
     const QUrl url(QStringLiteral("qrc:/example/qml/App.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
         &app, [url](QObject *obj, const QUrl &objUrl) {
@@ -86,7 +94,7 @@ int main(int argc, char *argv[])
     engine.load(url);
     const int exec = QGuiApplication::exec();
     if (exec == 931) {
-        QProcess::startDetached(qApp->applicationFilePath(), QStringList());
+        QProcess::startDetached(qApp->applicationFilePath(), qApp->arguments());
     }
     return exec;
 }

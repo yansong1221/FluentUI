@@ -45,7 +45,7 @@ T.ComboBox {
         topPadding: 6 - control.padding
         bottomPadding: 6 - control.padding
         renderType: FluTheme.nativeText ? Text.NativeRendering : Text.QtRendering
-        selectionColor: FluTools.colorAlpha(FluTheme.primaryColor,0.5)
+        selectionColor: FluTools.withOpacity(FluTheme.primaryColor,0.5)
         selectedTextColor: color
         text: control.editable ? control.editText : control.displayText
         enabled: control.editable
@@ -62,12 +62,14 @@ T.ComboBox {
         validator: control.validator
         selectByMouse: true
         verticalAlignment: Text.AlignVCenter
-        leftInset:1
-        topInset:1
-        bottomInset:1
-        rightInset:1
         background: FluTextBoxBackground{
-            borderWidth: 0
+            border.width: 1
+            bottomMargin: {
+                if(!control.editable){
+                    return 1
+                }
+                return contentItem && contentItem.activeFocus ? 2 : 1
+            }
             inputItem: contentItem
         }
         Component.onCompleted: {
@@ -120,7 +122,7 @@ T.ComboBox {
                 property: "opacity"
                 from:0
                 to:1
-                duration: FluTheme.enableAnimation ? 83 : 0
+                duration: FluTheme.animationEnabled ? 83 : 0
             }
         }
         exit:Transition {
@@ -128,7 +130,7 @@ T.ComboBox {
                 property: "opacity"
                 from:1
                 to:0
-                duration: FluTheme.enableAnimation ? 83 : 0
+                duration: FluTheme.animationEnabled ? 83 : 0
             }
         }
         background:Rectangle{

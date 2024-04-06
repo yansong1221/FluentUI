@@ -41,8 +41,8 @@ Item{
     }
     Component{
         id:com_loading
-        FluArea{
-            paddings: 0
+        FluFrame{
+            padding: 0
             border.width: 0
             radius: 0
             color:control.color
@@ -61,8 +61,8 @@ Item{
     }
     Component {
         id:com_empty
-        FluArea{
-            paddings: 0
+        FluFrame{
+            padding: 0
             border.width: 0
             radius: 0
             color:control.color
@@ -78,8 +78,8 @@ Item{
     }
     Component{
         id:com_error
-        FluArea{
-            paddings: 0
+        FluFrame{
+            padding: 0
             border.width: 0
             radius: 0
             color:control.color
